@@ -1,6 +1,6 @@
 //
-// @project IPRangeTree 2016
-// @author Dmitry Ponomarev <demdxx@gmail.com> 2016
+// @project IPRangeTree 2016 - 2018
+// @author Dmitry Ponomarev <demdxx@gmail.com> 2016 - 2018
 //
 
 package iprangetree
@@ -18,9 +18,9 @@ type IP net.IP
 func (ip IP) Less(then btree.Item) bool {
 	switch v := then.(type) {
 	case *IPItem:
-		return -1 == compare(net.IP(ip), v.StartIP)
+		return compare(net.IP(ip), v.StartIP) == -1
 	case IP:
-		return -1 == compare(net.IP(ip), net.IP(v))
+		return compare(net.IP(ip), net.IP(v)) == -1
 	}
 	return false
 }

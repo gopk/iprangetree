@@ -1,6 +1,6 @@
 //
-// @project IPRangeTree 2016
-// @author Dmitry Ponomarev <demdxx@gmail.com> 2016
+// @project IPRangeTree 2016 - 2018
+// @author Dmitry Ponomarev <demdxx@gmail.com> 2016 - 2018
 //
 
 package iprangetree
@@ -13,14 +13,14 @@ func compare(ip1, ip2 net.IP) int {
 	if len(ip1) > len(ip2) {
 		i1 = len(ip1) - len(ip2)
 		for i := i1; i > 0; i-- {
-			if 0x00 != ip1[i] {
+			if ip1[i] != 0 {
 				return 1
 			}
 		}
 	} else if len(ip2) > len(ip1) {
 		i2 = len(ip2) - len(ip1)
-		for i := i2; i > 0; i++ {
-			if 0x00 != ip2[i] {
+		for i := i2; i > 0; i-- {
+			if ip2[i] != 0 {
 				return -1
 			}
 		}
@@ -49,4 +49,21 @@ func lastIP(ip net.IP, mask net.IPMask) net.IP {
 		j++
 	}
 	return out
+}
+
+func compareExt(ip net.IP, ipUint uint32, it *IPItem) int {
+	if ipUint > 0 {
+		if ipUint < it.StartIPUint {
+			return -1
+		}
+		if ipUint == it.StartIPUint {
+			return 0
+		}
+		if it.StartIPUint > 0 {
+			return 1
+		}
+	} else if it.StartIPUint > 0 {
+		return 1
+	}
+	return compare(ip, it.StartIP)
 }
