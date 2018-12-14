@@ -6,7 +6,6 @@
 package iprangetree
 
 import (
-	"encoding/binary"
 	"errors"
 	"net"
 	"strings"
@@ -19,10 +18,9 @@ var ErrInvalidItemParse = errors.New("Invalid parse item")
 
 // IPItem IP range
 type IPItem struct {
-	StartIPUint uint32
-	StartIP     net.IP
-	EndIP       net.IP
-	Data        interface{}
+	StartIP net.IP
+	EndIP   net.IP
+	Data    interface{}
 }
 
 // ItemByString parse
@@ -63,16 +61,6 @@ func ItemByString(s string) (item *IPItem, err error) {
 func (i *IPItem) Less(then btree.Item) bool {
 	switch ip := then.(type) {
 	case *IPItem:
-		if i.StartIPUint > 0 {
-			if i.StartIPUint < ip.StartIPUint {
-				return true
-			}
-			if ip.StartIPUint > 0 {
-				return false
-			}
-		} else if ip.StartIPUint > 0 {
-			return false
-		}
 		return compare(i.StartIP, ip.StartIP) == -1
 	case IP:
 		return compare(i.EndIP, net.IP(ip)) == -1
@@ -84,19 +72,6 @@ func (i *IPItem) Less(then btree.Item) bool {
 func (i *IPItem) Compare(it interface{}) int {
 	switch ip := it.(type) {
 	case *IPItem:
-		if i.StartIPUint > 0 {
-			if i.StartIPUint < ip.StartIPUint {
-				return -1
-			}
-			if i.StartIPUint == ip.StartIPUint {
-				return 0
-			}
-			if ip.StartIPUint > 0 {
-				return 1
-			}
-		} else if ip.StartIPUint > 0 {
-			return -1
-		}
 		return compare(i.StartIP, ip.StartIP)
 	case IP:
 		return compare(i.EndIP, net.IP(ip))
@@ -113,22 +88,6 @@ func (i *IPItem) Has(ip net.IP) bool {
 
 // Normalize IP values
 func (i *IPItem) Normalize() {
-	if i.StartIP != nil {
-		if ip := i.StartIP.To4(); ip != nil {
-			i.StartIPUint = ip2int(i.StartIP)
-			i.StartIP = ip
-		}
-	}
-	if i.EndIP != nil {
-		if ip := i.EndIP.To4(); ip != nil {
-			i.EndIP = ip
-		}
-	}
-}
-
-func ip2int(ip net.IP) uint32 {
-	if len(ip) == 16 {
-		return binary.BigEndian.Uint32(ip[12:16])
-	}
-	return binary.BigEndian.Uint32(ip)
+	i.StartIP = prepareIP(i.StartIP)
+	i.EndIP = prepareIP(i.EndIP)
 }

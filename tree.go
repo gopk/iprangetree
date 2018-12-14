@@ -13,7 +13,7 @@ import (
 )
 
 // ErrInvalidItem message
-var ErrInvalidItem = errors.New("Invalid IP range item")
+var ErrInvalidItem = errors.New("iprangetree: invalid IP range item")
 
 // IPTree base
 type IPTree struct {
@@ -48,13 +48,14 @@ func (t *IPTree) Add(item *IPItem) error {
 
 // Lookup item by IP
 func (t *IPTree) Lookup(ip net.IP) (response *IPItem) {
-	ipVal := ip2int(ip)
+	ip = prepareIP(ip)
+
 	t.root.AscendGreaterOrEqual(IP(ip), func(item btree.Item) bool {
 		it := item.(*IPItem)
-		switch compareExt(ip, ipVal, it) {
+		switch compare(ip, it.StartIP) {
 		case 1:
 			if compare(ip, it.EndIP) <= 0 {
-				response = item.(*IPItem)
+				response = it
 				return false
 			}
 		case 0:
